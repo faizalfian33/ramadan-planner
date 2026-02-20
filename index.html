@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ramadan Planner - Bloom With Elegance</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;1,600&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Poppins', sans-serif; background-color: #fff1f2; }
+        .font-floral { font-family: 'Playfair Display', serif; }
+        input[type="checkbox"] { width: 1.25rem; height: 1.25rem; accent-color: #f43f5e; cursor: pointer; }
+        .fade-in { animation: fadeIn 0.3s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body class="text-slate-700 h-screen overflow-hidden flex justify-center">
+
+    <div id="welcomeModal" class="fixed inset-0 bg-rose-100/90 flex flex-col items-center justify-center z-50 backdrop-blur-sm px-6">
+        <div class="bg-white p-8 rounded-3xl shadow-xl text-center w-full max-w-sm fade-in border border-rose-100">
+            <h2 class="font-floral text-3xl text-rose-600 mb-2">Heiii... 🌸</h2>
+            <p class="text-slate-500 mb-6 text-sm">Kenalan dulu dong, kamu siapa?</p>
+            <input type="text" id="nameInput" class="w-full border-b-2 border-rose-200 p-2 text-center text-lg outline-none focus:border-rose-400 mb-6 bg-transparent" placeholder="Ketik namamu..." autocomplete="off">
+            <button onclick="saveName()" class="w-full bg-rose-400 text-white font-semibold py-3 rounded-xl hover:bg-rose-500 transition shadow-md">Masuk ✨</button>
+        </div>
+    </div>
+
+    <div id="mainApp" class="w-full max-w-md bg-[#fff1f2] h-full overflow-y-auto relative hidden">
+        
+        <div class="sticky top-0 bg-[#fff1f2]/95 backdrop-blur-md pt-8 pb-4 px-6 z-10 border-b border-rose-100/50 flex items-center justify-between">
+            <div>
+                <h1 class="font-floral text-3xl text-rose-600">Ramadan Planner</h1>
+                <p id="greetingText" class="text-sm text-rose-400 font-medium italic mt-1">Selamat datang,</p>
+            </div>
+            <button id="backBtn" onclick="goHome()" class="hidden bg-white p-2 rounded-full shadow-sm text-rose-500 border border-rose-100 hover:bg-rose-50">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z"/></svg>
+            </button>
+        </div>
+
+        <div class="p-6">
+            
+            <div id="view-home" class="fade-in grid grid-cols-2 gap-4">
+                <button onclick="openPage('view-daily')" class="bg-white p-5 rounded-2xl shadow-sm border border-rose-100 text-center hover:shadow-md transition active:scale-95 flex flex-col items-center justify-center gap-2 aspect-square">
+                    <span class="text-3xl">🕌</span><span class="font-bold text-sm text-slate-600">Daily Log</span>
+                </button>
+                <button onclick="openPage('view-selfdev')" class="bg-white p-5 rounded-2xl shadow-sm border border-rose-100 text-center hover:shadow-md transition active:scale-95 flex flex-col items-center justify-center gap-2 aspect-square">
+                    <span class="text-3xl">🌸</span><span class="font-bold text-sm text-slate-600">Self Dev</span>
+                </button>
+                <button onclick="openPage('view-iqra')" class="bg-white p-5 rounded-2xl shadow-sm border border-rose-100 text-center hover:shadow-md transition active:scale-95 flex flex-col items-center justify-center gap-2 aspect-square">
+                    <span class="text-3xl">📖</span><span class="font-bold text-sm text-slate-600">Iqra' Planner</span>
+                </button>
+                <button onclick="openPage('view-dompet')" class="bg-white p-5 rounded-2xl shadow-sm border border-rose-100 text-center hover:shadow-md transition active:scale-95 flex flex-col items-center justify-center gap-2 aspect-square">
+                    <span class="text-3xl">👛</span><span class="font-bold text-sm text-slate-600">Tabungan</span>
+                </button>
+            </div>
+
+            <div id="view-daily" class="hidden fade-in">
+                <div class="flex justify-between items-center mb-6 bg-white p-3 rounded-xl shadow-sm border border-rose-100">
+                    <span class="font-semibold text-sm">Hari Puasa:</span>
+                    <select id="daySelector" onchange="changeDay()" class="bg-rose-50 text-rose-600 p-2 rounded-lg outline-none font-bold text-sm border border-rose-100"></select>
+                </div>
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-rose-100">
+                    <h2 class="text-xs font-bold text-slate-400 mb-4 text-center tracking-widest border-b border-rose-50 pb-3">PRAY ROUTINE 🕌</h2>
+                    <div id="prayCheckboxes" class="space-y-4"></div>
+                </div>
+            </div>
+
+            <div id="view-selfdev" class="hidden fade-in">
+                <div class="text-center mb-4 bg-rose-200 text-rose-700 py-2 rounded-xl font-bold text-sm" id="selfDevDayTitle">Hari Ke-1</div>
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-rose-100 mb-4">
+                    <h2 class="text-xs font-bold text-slate-400 mb-3 text-center tracking-widest">HIDRASI 💧 (8 Gelas)</h2>
+                    <div class="flex flex-wrap gap-2 justify-center" id="waterCheckboxes"></div>
+                </div>
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-rose-100">
+                    <h2 class="text-xs font-bold text-slate-400 mb-4 text-center tracking-widest border-b border-rose-50 pb-3">DETOX HABIT 🚫</h2>
+                    <div class="flex justify-between items-center mb-4">
+                        <span class="font-medium text-sm">Ngerem Jajan 🧋</span>
+                        <div class="flex items-center gap-3">
+                            <button onclick="updateDetox('jajan', -1)" class="w-8 h-8 bg-slate-100 rounded-full text-slate-500 font-bold">-</button>
+                            <span id="jajanScore" class="font-bold text-rose-500 w-4 text-center">0</span>
+                            <button onclick="updateDetox('jajan', 1)" class="w-8 h-8 bg-rose-100 rounded-full text-rose-600 font-bold">+</button>
+                        </div>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="font-medium text-sm">Sabar Level 🧘‍♀️</span>
+                        <select onchange="updateSabar(this.value)" id="sabarSelect" class="bg-slate-50 border border-rose-100 rounded-lg p-2 text-sm outline-none w-32">
+                            <option value="Aman">✨ Aman Bestie</option>
+                            <option value="Agak Emosi">🤏 Agak Emosi</option>
+                            <option value="Bocor">🌋 Astaghfirullah</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div id="view-dompet" class="hidden fade-in">
+                <div class="grid grid-cols-2 gap-3 mb-4">
+                    <div class="bg-white p-3 rounded-xl border border-emerald-100 text-center shadow-sm">
+                        <p class="text-[10px] font-bold text-slate-400 uppercase">Pemasukan 💸</p>
+                        <p id="totalMasuk" class="text-sm font-bold text-emerald-500 mt-1">Rp0</p>
+                    </div>
+                    <div class="bg-white p-3 rounded-xl border border-rose-100 text-center shadow-sm">
+                        <p class="text-[10px] font-bold text-slate-400 uppercase">Pengeluaran 📉</p>
+                        <p id="totalKeluar" class="text-sm font-bold text-rose-500 mt-1">Rp0</p>
+                    </div>
+                    <div class="col-span-2 bg-rose-400 p-4 rounded-xl shadow-md text-center text-white border border-rose-300">
+                        <p class="text-xs font-semibold opacity-90 uppercase tracking-widest">Sisa Saldo Lebaran ✨</p>
+                        <p id="sisaSaldo" class="text-3xl font-black mt-1">Rp0</p>
+                    </div>
+                </div>
+
+                <div class="bg-white p-4 rounded-2xl shadow-sm border border-rose-100 mb-4">
+                    <h2 class="text-xs font-bold text-slate-400 mb-3 text-center tracking-widest">CATAT DUIT 📝</h2>
+                    <div class="flex gap-2 mb-2">
+                        <select id="trxType" class="bg-slate-50 border border-rose-100 rounded-lg p-2 text-sm outline-none w-1/3 text-slate-600 font-medium">
+                            <option value="masuk">Masuk</option>
+                            <option value="keluar">Keluar</option>
+                        </select>
+                        <input type="text" id="trxDesc" placeholder="Keterangan (misal: Bukber McD)" class="bg-slate-50 border border-rose-100 rounded-lg p-2 text-sm outline-none w-2/3">
+                    </div>
+                    <div class="flex gap-2">
+                        <input type="number" id="trxAmount" placeholder="Nominal (Tanpa titik, cth: 50000)" class="bg-slate-50 border border-rose-100 rounded-lg p-2 text-sm outline-none w-2/3">
+                        <button onclick="addTransaction()" class="bg-rose-400 text-white font-bold rounded-lg w-1/3 text-sm hover:bg-rose-500">Simpan</button>
+                    </div>
+                </div>
+
+                <div class="bg-white p-4 rounded-2xl shadow-sm border border-rose-100">
+                    <h2 class="text-xs font-bold text-slate-400 mb-3 text-center tracking-widest border-b border-rose-50 pb-2">RIWAYAT 📜</h2>
+                    <div id="trxHistory" class="space-y-3 max-h-48 overflow-y-auto pr-1">
+                        </div>
+                </div>
+            </div>
+
+            <div id="view-iqra" class="hidden fade-in">
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-rose-100 text-center mt-10">
+                    <span class="text-5xl block mb-4">📖</span>
+                    <h2 class="font-bold text-rose-500 mb-2">Iqra' Planner</h2>
+                    <p class="text-sm text-slate-500 mb-4">Akses eksklusif ngaji sedang diproses. wonge jek pusing! ✨</p>
+                    <button class="bg-rose-50 text-rose-400 border border-rose-200 px-4 py-2 rounded-lg text-sm font-semibold opacity-70">Segera dan Sabaaarrr wkwk ⏳</button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        // 1. Inisialisasi Data
+        let appData = JSON.parse(localStorage.getItem('ramadanApp')) || initEmptyData();
+        let currentDay = 0; 
+        
+        // Cek update versi untuk data dompet (biar nggak error kalau kemarin udah sempet ngetes)
+        if(!appData.dompet) {
+            appData.dompet = { transactions: [] };
+            saveData();
+        }
+
+        function initEmptyData() {
+            let data = { userName: "", dompet: { transactions: [] }, days: [] };
+            for(let i=1; i<=30; i++) {
+                data.days.push({
+                    day: i,
+                    pray: { Subuh: false, Dzuhur: false, Ashar: false, Maghrib: false, Isya: false, Tarawih: false },
+                    water: [false, false, false, false, false, false, false, false],
+                    jajan: 0, sabar: "Aman"
+                });
+            }
+            return data;
+        }
+
+        // 2. Booting App
+        window.onload = () => {
+            if (!appData.userName) document.getElementById('welcomeModal').classList.remove('hidden');
+            else startApp();
+            setupDaySelector();
+        };
+
+        function saveName() {
+            const name = document.getElementById('nameInput').value.trim();
+            if(name) {
+                appData.userName = name; saveData();
+                document.getElementById('welcomeModal').classList.add('hidden');
+                startApp();
+            }
+        }
+
+        function startApp() {
+            document.getElementById('mainApp').classList.remove('hidden');
+            document.getElementById('greetingText').innerText = `Selamat datang, ${appData.userName} 🌸`;
+            renderCurrentDay();
+        }
+
+        // 3. Navigasi Antar Halaman
+        const views = ['view-home', 'view-daily', 'view-selfdev', 'view-iqra', 'view-dompet'];
+        function openPage(targetView) {
+            views.forEach(v => document.getElementById(v).classList.add('hidden'));
+            document.getElementById(targetView).classList.remove('hidden');
+            document.getElementById('backBtn').classList.remove('hidden');
+            
+            if(targetView === 'view-daily' || targetView === 'view-selfdev') renderCurrentDay();
+            if(targetView === 'view-dompet') renderDompet();
+        }
+
+        function goHome() {
+            views.forEach(v => document.getElementById(v).classList.add('hidden'));
+            document.getElementById('view-home').classList.remove('hidden');
+            document.getElementById('backBtn').classList.add('hidden');
+        }
+
+        // 4. Logic UI Daily & Self Dev
+        function setupDaySelector() {
+            const selector = document.getElementById('daySelector');
+            for(let i=1; i<=30; i++) selector.innerHTML += `<option value="${i-1}">Hari ke-${i}</option>`;
+        }
+
+        function changeDay() { currentDay = parseInt(document.getElementById('daySelector').value); renderCurrentDay(); }
+
+        function renderCurrentDay() {
+            const dataHariIni = appData.days[currentDay];
+            
+            const prayContainer = document.getElementById('prayCheckboxes'); prayContainer.innerHTML = '';
+            for (const [sholat, isChecked] of Object.entries(dataHariIni.pray)) {
+                prayContainer.innerHTML += `
+                    <div class="flex justify-between items-center border-b border-rose-50 pb-2 last:border-0">
+                        <span class="${isChecked ? 'text-rose-300 line-through' : 'text-slate-600 font-medium'}">${sholat}</span>
+                        <input type="checkbox" ${isChecked ? 'checked' : ''} onchange="togglePray('${sholat}', this.checked)">
+                    </div>`;
+            }
+
+            document.getElementById('selfDevDayTitle').innerText = `Puasa Hari Ke-${currentDay + 1}`;
+            const waterContainer = document.getElementById('waterCheckboxes'); waterContainer.innerHTML = '';
+            dataHariIni.water.forEach((isDrank, index) => {
+                waterContainer.innerHTML += `
+                    <div class="flex flex-col items-center gap-1">
+                        <input type="checkbox" class="w-6 h-6 rounded-full" ${isDrank ? 'checked' : ''} onchange="toggleWater(${index}, this.checked)">
+                        <span class="text-[10px] font-bold text-slate-400">Gls ${index+1}</span>
+                    </div>`;
+            });
+
+            document.getElementById('jajanScore').innerText = dataHariIni.jajan;
+            document.getElementById('sabarSelect').value = dataHariIni.sabar;
+        }
+
+        // 5. Logic Tabungan Dompet
+        function formatRp(angka) {
+            return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(angka);
+        }
+
+        function renderDompet() {
+            let masuk = 0; let keluar = 0;
+            const historyContainer = document.getElementById('trxHistory'); historyContainer.innerHTML = '';
+            const trxs = [...appData.dompet.transactions].reverse(); // Biar yang terbaru di atas
+
+            if (trxs.length === 0) {
+                historyContainer.innerHTML = '<p class="text-center text-xs text-slate-400 py-4 italic">Belum ada catatan dompet 🌸</p>';
+            }
+
+            trxs.forEach((trx, revIndex) => {
+                const actualIndex = appData.dompet.transactions.length - 1 - revIndex;
+                if(trx.type === 'masuk') masuk += trx.amount; else keluar += trx.amount;
+
+                const isMasuk = trx.type === 'masuk';
+                historyContainer.innerHTML += `
+                    <div class="flex justify-between items-center bg-slate-50 p-3 rounded-xl border border-slate-100">
+                        <div>
+                            <p class="text-sm font-semibold ${isMasuk ? 'text-emerald-500' : 'text-rose-500'}">${trx.desc}</p>
+                            <p class="text-[10px] text-slate-400 mt-0.5">${isMasuk ? 'Masuk' : 'Keluar'}</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-sm font-bold ${isMasuk ? 'text-emerald-500' : 'text-rose-500'}">${isMasuk ? '+' : '-'}${formatRp(trx.amount)}</p>
+                            <button onclick="deleteTrx(${actualIndex})" class="text-[10px] text-rose-300 hover:text-rose-500 underline mt-1">Hapus</button>
+                        </div>
+                    </div>`;
+            });
+
+            document.getElementById('totalMasuk').innerText = formatRp(masuk);
+            document.getElementById('totalKeluar').innerText = formatRp(keluar);
+            document.getElementById('sisaSaldo').innerText = formatRp(masuk - keluar);
+        }
+
+        function addTransaction() {
+            const type = document.getElementById('trxType').value;
+            const desc = document.getElementById('trxDesc').value.trim();
+            const amount = parseInt(document.getElementById('trxAmount').value);
+
+            if(!desc || !amount || isNaN(amount)) {
+                alert('Heiii, isi keterangan dan nominalnya yang bener dulu ya! 🌸'); return;
+            }
+
+            appData.dompet.transactions.push({ type, desc, amount });
+            saveData();
+            
+            document.getElementById('trxDesc').value = ''; document.getElementById('trxAmount').value = '';
+            renderDompet();
+        }
+
+        function deleteTrx(index) {
+            appData.dompet.transactions.splice(index, 1);
+            saveData(); renderDompet();
+        }
+
+        // 6. Helper Simpan Data
+        function togglePray(sholat, status) { appData.days[currentDay].pray[sholat] = status; saveData(); renderCurrentDay(); }
+        function toggleWater(index, status) { appData.days[currentDay].water[index] = status; saveData(); renderCurrentDay(); }
+        function updateDetox(type, val) { 
+            appData.days[currentDay][type] += val; 
+            if(appData.days[currentDay][type] < 0) appData.days[currentDay][type] = 0; 
+            saveData(); renderCurrentDay(); 
+        }
+        function updateSabar(val) { appData.days[currentDay].sabar = val; saveData(); }
+        function saveData() { localStorage.setItem('ramadanApp', JSON.stringify(appData)); }
+    </script>
+</body>
+</html>
