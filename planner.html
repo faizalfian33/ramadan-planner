@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ramadan Planner</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;1,600&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Poppins', sans-serif; background-color: #ecfdf5; }
+        .font-islamic { font-family: 'Playfair Display', serif; }
+        input[type="checkbox"] { width: 1.25rem; height: 1.25rem; accent-color: #10b981; cursor: pointer; }
+        .fade-in { animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .bg-motif { background-image: radial-gradient(#a7f3d0 1px, transparent 1px); background-size: 20px 20px; }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #a7f3d0; border-radius: 10px; }
+    </style>
+</head>
+<body class="text-slate-700 h-screen md:flex md:items-center md:justify-center bg-emerald-50 bg-motif p-0 md:p-6 overflow-hidden">
+
+    <div id="mainApp" class="w-full h-full md:h-[90vh] md:max-w-5xl bg-emerald-50 md:bg-white/40 md:backdrop-blur-xl md:rounded-[2rem] md:shadow-2xl flex flex-col md:flex-row relative md:border md:border-white/50">
+        
+        <div id="view-home" class="w-full md:w-[35%] bg-emerald-50 md:bg-white/60 md:border-r border-emerald-100 p-6 flex-shrink-0 flex flex-col h-full overflow-y-auto transition-all duration-300 z-20">
+            <div class="mb-6">
+                <h1 class="font-islamic text-3xl text-emerald-600 font-bold">Ramadan Planner</h1>
+                <p class="text-sm text-emerald-500 font-medium mt-1">Semangat puasanya ya Kak.</p>
+            </div>
+
+            <div id="prayerWidget" class="bg-gradient-to-br from-emerald-500 to-teal-600 p-5 rounded-3xl shadow-lg shadow-emerald-200 text-white mb-6 relative overflow-hidden shrink-0">
+                <div class="absolute -right-4 -bottom-4 opacity-20 text-8xl">🕌</div>
+                <div class="relative z-10">
+                    <div class="flex justify-between items-start mb-2">
+                        <span id="dateHeader" class="bg-white/20 px-3 py-1 rounded-full text-[10px] font-medium backdrop-blur-sm">Memuat...</span>
+                        <div class="flex items-center gap-1 bg-white/20 px-2 py-1 rounded-full text-[10px] font-medium backdrop-blur-sm"><span>📍</span> <span>Kota Malang</span></div>
+                    </div>
+                    <p class="text-xs font-medium text-emerald-100 mt-3 uppercase tracking-wider">Menuju Waktu</p>
+                    <h2 class="text-3xl font-bold flex items-end gap-2 mt-1 mb-3">
+                        <span id="nextPrayerName">...</span> <span id="nextPrayerTime" class="text-2xl font-semibold opacity-90">--:--</span>
+                    </h2>
+                    <div class="bg-white/20 rounded-xl p-2 backdrop-blur-sm border border-white/10 text-center"><p id="countdownMaghrib" class="text-xs font-bold text-white tracking-wide">Menghitung waktu berbuka...</p></div>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-4 pb-6">
+                <button onclick="openPage('view-daily')" class="bg-white p-4 rounded-3xl shadow-sm border border-emerald-100 text-center hover:bg-emerald-50 hover:shadow-md transition flex flex-col items-center justify-center gap-2 aspect-square group"><span class="text-3xl group-hover:scale-110 transition-transform">🤲</span><span class="font-bold text-xs text-slate-700">Daily Log</span></button>
+                <button onclick="openPage('view-selfdev')" class="bg-white p-4 rounded-3xl shadow-sm border border-emerald-100 text-center hover:bg-emerald-50 hover:shadow-md transition flex flex-col items-center justify-center gap-2 aspect-square group"><span class="text-3xl group-hover:scale-110 transition-transform">💧</span><span class="font-bold text-xs text-slate-700">Self Dev</span></button>
+                <button onclick="openPage('view-iqra')" class="bg-white p-4 rounded-3xl shadow-sm border border-emerald-100 text-center hover:bg-emerald-50 hover:shadow-md transition flex flex-col items-center justify-center gap-2 aspect-square group"><span class="text-3xl group-hover:scale-110 transition-transform">📖</span><span class="font-bold text-xs text-slate-700">Iqra' Planner</span></button>
+                <button onclick="openPage('view-dompet')" class="bg-white p-4 rounded-3xl shadow-sm border border-emerald-100 text-center hover:bg-emerald-50 hover:shadow-md transition flex flex-col items-center justify-center gap-2 aspect-square group"><span class="text-3xl group-hover:scale-110 transition-transform">💸</span><span class="font-bold text-xs text-slate-700">Tabungan</span></button>
+            </div>
+        </div>
+
+        <div id="contentPane" class="w-full md:w-[65%] h-full overflow-y-auto relative hidden md:block transition-all duration-300">
+            <div class="md:hidden sticky top-0 bg-emerald-50/95 backdrop-blur-md pt-6 pb-4 px-6 z-20 border-b border-emerald-100/50 flex justify-end">
+                <button id="backBtn" onclick="goHome()" class="bg-white p-2.5 rounded-full shadow-sm text-emerald-600 border border-emerald-100 hover:bg-emerald-100 transition"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z"/></svg></button>
+            </div>
+            <div class="p-6 md:pt-10">
+                
+                <div id="view-daily" class="hidden fade-in">
+                    <div class="flex justify-between items-center mb-6 bg-white p-3 rounded-2xl shadow-sm border border-emerald-100">
+                        <span class="font-semibold text-sm text-slate-600 pl-2">Hari Puasa:</span>
+                        <select id="daySelector" onchange="changeDay()" class="bg-emerald-50 text-emerald-600 p-2 rounded-xl outline-none font-bold text-sm border border-emerald-100 cursor-pointer"></select>
+                    </div>
+                    <div class="bg-white p-6 rounded-3xl shadow-sm border border-emerald-100 mb-5">
+                        <h2 class="text-xs font-bold text-emerald-500 mb-2 text-center tracking-widest border-b border-emerald-50 pb-3">PRAY ROUTINE 🕌</h2>
+                        <div id="prayCheckboxes" class="space-y-1"></div>
+                    </div>
+                    <div class="bg-white p-6 rounded-3xl shadow-sm border border-emerald-100">
+                        <h2 class="text-xs font-bold text-emerald-500 mb-4 text-center tracking-widest border-b border-emerald-50 pb-3">CATATAN HARI INI 📝</h2>
+                        <textarea id="dailyNote" rows="3" placeholder="Gimana puasanya? Ada kejadian seru?" class="w-full bg-slate-50 border border-emerald-100 rounded-xl p-3 text-sm outline-none text-slate-600 focus:border-emerald-400 mb-3"></textarea>
+                        <button onclick="saveNote()" class="w-full bg-emerald-500 text-white font-bold py-3 rounded-xl hover:bg-emerald-600 transition shadow-md text-sm">Simpan Catatan ke Sheets</button>
+                    </div>
+                </div>
+
+                <div id="view-selfdev" class="hidden fade-in pb-10">
+                    <div class="text-center mb-5 bg-emerald-100 text-emerald-700 py-2 rounded-2xl font-bold text-sm shadow-sm border border-emerald-200" id="selfDevDayTitle">Hari Ke-1</div>
+                    <div class="bg-white p-6 rounded-3xl shadow-sm border border-emerald-100 mb-5">
+                        <h2 class="text-xs font-bold text-emerald-500 mb-4 text-center tracking-widest">TARGET HIDRASI 💧 (8 Gelas)</h2>
+                        <div class="flex flex-wrap gap-3 justify-center" id="waterCheckboxes"></div>
+                    </div>
+                    
+                    <div class="bg-white p-6 rounded-3xl shadow-sm border border-emerald-100 space-y-5">
+                        <h2 class="text-xs font-bold text-emerald-500 mb-2 text-center tracking-widest border-b border-emerald-50 pb-3">DETOX & HABIT 🚫</h2>
+                        
+                        <div id="rokokContainer" class="flex justify-between items-center hidden bg-rose-50 p-3 rounded-xl border border-rose-100">
+                            <span class="font-semibold text-sm text-slate-700">Rokok (Max 5) 🚬</span>
+                            <div class="flex items-center gap-3">
+                                <button onclick="updateDetox('rokok', -1)" class="w-8 h-8 bg-white rounded-full text-slate-500 font-bold border border-slate-200 shadow-sm">-</button>
+                                <span id="rokokScore" class="font-bold text-rose-500 w-4 text-center text-lg">0</span>
+                                <button onclick="updateDetox('rokok', 1)" class="w-8 h-8 bg-white rounded-full text-rose-500 font-bold border border-rose-200 shadow-sm">+</button>
+                            </div>
+                        </div>
+
+                        <div class="space-y-4">
+                            <div class="space-y-1"><label class="text-[10px] font-bold text-emerald-500 tracking-wider">SCREEN TIME / SCROLL</label>
+                                <select id="screenSelect" class="w-full bg-slate-50 border border-emerald-100 rounded-xl p-3 text-sm outline-none text-slate-600 cursor-pointer focus:border-emerald-400">
+                                    <option value="">Pilih...</option><option value="Aman">Aman</option><option value="Keceplosan Dikit">Keceplosan Dikit</option><option value="PARAAH SIIH!">PARAAH SIIH!</option>
+                                </select>
+                            </div>
+                            <div class="space-y-1"><label class="text-[10px] font-bold text-emerald-500 tracking-wider">GHIBAH / MARAH</label>
+                                <select id="ghibahSelect" class="w-full bg-slate-50 border border-emerald-100 rounded-xl p-3 text-sm outline-none text-slate-600 cursor-pointer focus:border-emerald-400">
+                                    <option value="">Pilih...</option><option value="Alhamdulillah Aman">Alhamdulillah Aman</option><option value="dikit kok">Dikit kok</option><option value="Astaghfirullah, terlanjur">Astaghfirullah, terlanjur</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="border-t border-emerald-50 pt-4"></div>
+                        <div class="flex items-center justify-between bg-emerald-50 p-3 rounded-xl border border-emerald-100">
+                            <span class="font-semibold text-sm text-emerald-700">Sedekah Hari Ini? ✨</span>
+                            <input type="checkbox" id="sedekahCheck" class="w-6 h-6 accent-emerald-500 rounded cursor-pointer">
+                        </div>
+                        <input type="number" id="sedekahNominal" placeholder="Nominal Sedekah (Opsional)" class="w-full bg-slate-50 border border-emerald-100 rounded-xl p-3 text-sm outline-none text-slate-600 focus:border-emerald-400">
+                        
+                        <div class="border-t border-emerald-50 pt-4"></div>
+                        <div class="space-y-3">
+                            <input type="text" id="moodInput" placeholder="Mood / Energi hari ini?" class="w-full bg-slate-50 border border-emerald-100 rounded-xl p-3 text-sm outline-none text-slate-600 focus:border-emerald-400">
+                            <textarea id="selfDevNote" rows="2" placeholder="Catatan Self Dev..." class="w-full bg-slate-50 border border-emerald-100 rounded-xl p-3 text-sm outline-none text-slate-600 focus:border-emerald-400"></textarea>
+                        </div>
+                        <button onclick="saveSelfDev()" class="w-full bg-teal-500 text-white font-bold py-3 rounded-xl hover:bg-teal-600 transition shadow-md text-sm mt-2">Simpan Self Dev ke Sheets</button>
+                    </div>
+                </div>
+
+                <div id="view-dompet" class="hidden fade-in">
+                    <div class="grid grid-cols-2 gap-3 mb-5">
+                        <div class="bg-white p-4 rounded-2xl border border-teal-100 text-center shadow-sm"><p class="text-[10px] font-bold text-slate-400 uppercase">Pemasukan 💸</p><p id="totalMasuk" class="text-sm font-bold text-teal-500 mt-1">Rp0</p></div>
+                        <div class="bg-white p-4 rounded-2xl border border-rose-100 text-center shadow-sm"><p class="text-[10px] font-bold text-slate-400 uppercase">Pengeluaran 📉</p><p id="totalKeluar" class="text-sm font-bold text-rose-500 mt-1">Rp0</p></div>
+                        <div class="col-span-2 bg-gradient-to-r from-teal-500 to-emerald-500 p-5 rounded-3xl shadow-lg text-center text-white border border-emerald-400"><p class="text-xs font-semibold opacity-90 uppercase tracking-widest">Sisa Saldo Lebaran ✨</p><p id="sisaSaldo" class="text-3xl font-black mt-2">Rp0</p></div>
+                    </div>
+                    <div class="bg-white p-5 rounded-3xl shadow-sm border border-emerald-100 mb-5">
+                        <h2 class="text-xs font-bold text-emerald-500 mb-4 text-center tracking-widest">CATAT DUIT 📝</h2>
+                        <div class="flex gap-2 mb-3">
+                            <select id="trxType" class="bg-slate-50 border border-emerald-100 rounded-xl p-3 text-sm outline-none w-1/3 text-slate-600 font-medium"><option value="masuk">Masuk</option><option value="keluar">Keluar</option></select>
+                            <input type="text" id="trxDesc" placeholder="Keterangan..." class="bg-slate-50 border border-emerald-100 rounded-xl p-3 text-sm outline-none w-2/3 focus:border-emerald-400">
+                        </div>
+                        <div class="flex gap-2">
+                            <input type="number" id="trxAmount" placeholder="Nominal" class="bg-slate-50 border border-emerald-100 rounded-xl p-3 text-sm outline-none w-2/3 focus:border-emerald-400">
+                            <button onclick="addTransaction()" class="bg-emerald-500 text-white font-bold rounded-xl w-1/3 text-sm hover:bg-emerald-600 transition shadow-sm">Simpan</button>
+                        </div>
+                    </div>
+                    <div class="bg-white p-5 rounded-3xl shadow-sm border border-emerald-100">
+                        <h2 class="text-xs font-bold text-emerald-500 mb-4 text-center tracking-widest border-b border-emerald-50 pb-3">RIWAYAT 📜</h2>
+                        <div id="trxHistory" class="space-y-3 max-h-48 overflow-y-auto pr-1"></div>
+                    </div>
+                </div>
+
+                <div id="view-iqra" class="hidden fade-in pb-10">
+                    <div class="text-center mb-4 bg-emerald-100 text-emerald-700 py-2 rounded-2xl font-bold text-sm shadow-sm border border-emerald-200" id="iqraDayTitle">Hari Ke-1</div>
+                    <div class="bg-gradient-to-br from-emerald-400 to-teal-500 p-6 rounded-3xl shadow-lg shadow-emerald-200 text-white mb-5 relative overflow-hidden">
+                        <h2 class="font-bold text-xl relative z-10 mb-1">Target Khatam ✨</h2>
+                        <p class="text-xs opacity-90 relative z-10 mb-5">Jadikan setiap hari lebih bermakna.</p>
+                        <select id="targetKhatam" onchange="updateTarget()" class="w-full bg-white/20 text-white border border-white/30 rounded-xl p-3 outline-none font-semibold backdrop-blur-sm relative z-10 text-sm cursor-pointer">
+                            <option value="0" class="text-slate-700">Pilih Targetmu...</option><option value="30" class="text-slate-700">1 Bulan (30 Hari) ~ 20 Hal/hari</option><option value="90" class="text-slate-700">3 Bulan (90 Hari) ~ 6 Hal/hari</option><option value="180" class="text-slate-700">6 Bulan (180 Hari) ~ 3 Hal/hari</option>
+                        </select>
+                    </div>
+                    <div class="bg-white p-5 rounded-3xl shadow-sm border border-emerald-100 mb-5 text-center">
+                        <h2 class="text-[10px] font-bold text-emerald-500 tracking-widest uppercase mb-2">🔥 Target Hari Ini</h2>
+                        <div class="flex justify-center items-end gap-2"><span id="dailyPagesRead" class="text-4xl font-black text-emerald-600">0</span><span id="dailyPagesTarget" class="text-sm font-semibold text-slate-400 mb-1">/ - Hal</span></div>
+                        <div class="w-full bg-slate-100 rounded-full h-2.5 mt-4 overflow-hidden"><div id="dailyProgressBar" class="bg-emerald-500 h-2.5 rounded-full transition-all duration-500" style="width: 0%"></div></div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3 mb-5">
+                        <div class="bg-white p-4 rounded-2xl border border-emerald-100 shadow-sm flex flex-col justify-center"><p class="text-[10px] font-bold text-emerald-600 uppercase mb-1">📌 Terakhir Dibaca</p><p id="lastSurah" class="text-sm font-bold text-slate-700 truncate">Belum ada</p><p id="lastAyat" class="text-xs text-slate-500 mt-1">Ayat -</p></div>
+                        <div class="bg-white p-4 rounded-2xl border border-teal-100 shadow-sm flex flex-col justify-center items-center text-center"><p class="text-[10px] font-bold text-teal-600 uppercase mb-1">📈 Progress Total</p><p id="iqraProgress" class="text-2xl font-black text-teal-500">0%</p><p class="text-[10px] text-slate-400 mt-1">dari 604 Hal</p></div>
+                    </div>
+                    <div class="bg-white p-6 rounded-3xl shadow-sm border border-emerald-100 mb-6">
+                        <h2 class="text-xs font-bold text-emerald-500 mb-5 text-center tracking-widest border-b border-emerald-50 pb-3">TANDAI BACAAN 📖</h2>
+                        <div class="space-y-4">
+                            <select id="inputSesi" class="w-full bg-slate-50 border border-emerald-100 rounded-xl p-3 text-sm outline-none text-slate-600 font-medium focus:border-emerald-400 cursor-pointer">
+                                <option value="">Pilih Sesi Baca...</option><option value="Habis Subuh">Habis Subuh</option><option value="Pas Break">Pas Break</option><option value="Sela-Sela Waktu Luang">Sela-Sela Waktu Luang</option><option value="Malam / Habis Tarawih">Malam / Habis Tarawih</option>
+                            </select>
+                            <div class="grid grid-cols-2 gap-3">
+                                <div class="space-y-2 bg-slate-50 p-3 rounded-xl border border-emerald-50">
+                                    <label class="text-[10px] font-bold text-emerald-500 tracking-wider">POSISI AWAL</label>
+                                    <select id="surahAwalDropdown" class="w-full bg-white border border-emerald-100 rounded-lg p-2 text-sm outline-none text-slate-600 cursor-pointer"><option value="">Pilih Surah...</option></select>
+                                    <input type="number" id="inputAyatAwal" placeholder="Ayat Ke-" class="w-full bg-white border border-emerald-100 rounded-lg p-2 text-sm outline-none text-slate-600">
+                                </div>
+                                <div class="space-y-2 bg-slate-50 p-3 rounded-xl border border-emerald-50">
+                                    <label class="text-[10px] font-bold text-emerald-500 tracking-wider">POSISI AKHIR</label>
+                                    <select id="surahDropdown" class="w-full bg-white border border-emerald-100 rounded-lg p-2 text-sm outline-none text-slate-600 cursor-pointer"><option value="">Pilih Surah...</option></select>
+                                    <input type="number" id="inputAyatAkhir" placeholder="Ayat Ke-" class="w-full bg-white border border-emerald-100 rounded-lg p-2 text-sm outline-none text-slate-600">
+                                </div>
+                            </div>
+                            <div class="flex gap-3">
+                                <input type="number" id="inputHal" placeholder="Jml Halaman" class="w-1/2 bg-slate-50 border border-emerald-100 rounded-xl p-3 text-sm outline-none text-slate-600 focus:border-emerald-400">
+                                <input type="number" id="inputJuz" placeholder="Juz Ke-" class="w-1/2 bg-slate-50 border border-emerald-100 rounded-xl p-3 text-sm outline-none text-slate-600 focus:border-emerald-400">
+                            </div>
+                            <input type="text" id="inputNoteIqra" placeholder="Catatan Ngaji (opsional)" class="w-full bg-slate-50 border border-emerald-100 rounded-xl p-3 text-sm outline-none text-slate-600 focus:border-emerald-400">
+                            <button onclick="saveIqraProgress()" class="w-full bg-teal-500 text-white font-bold py-3 rounded-xl hover:bg-teal-600 transition shadow-md text-sm mt-2">Simpan Progress</button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwA8mW53lGdBRJTMeKim1bHRIgmFqzWH_vnr6nAYmyknO8AiOWFrNeacZYvNfqiEJLp/exec';
+        
+        const activeAccount = 'Echa'; 
+        const storageKey = 'ramadanApp_Echa';
+
+        let appData = null; let currentDay = 0; let maghribTime = ""; 
+
+        // LANGSUNG JALAN PAS DIBUKA! NO LOGIN!
+        window.onload = () => { initApp(); };
+
+        function initApp() {
+            appData = JSON.parse(localStorage.getItem(storageKey)) || initEmptyData();
+            appData.days.forEach(d => { 
+                if(d.pray.Sahur === undefined) {
+                    d.pray.Sahur = false; d.pray.Puasa = false; d.pray.Witir = false; d.pray.Tahajjud = false; d.pray.Dhuha = false;
+                    d.note = ""; d.rokok = 0; d.screen = ""; d.ghibah = ""; d.sedekah = false; d.nominalSedekah = ""; d.mood = ""; d.selfDevNote = "";
+                }
+            });
+            
+            initDateAndPrayer(); setupDaySelector(); loadSurahListOnly(); renderCurrentDay(); handleResponsiveLayout();
+        }
+
+        function initEmptyData() {
+            let data = { dompet: { transactions: [] }, iqra: { target: 0, lastSurah: "Belum ada", lastAyat: "-", totalPagesRead: 0 }, days: [] };
+            for(let i=1; i<=30; i++) data.days.push({ day: i, pray: { Sahur: false, Puasa: false, Subuh: false, Dzuhur: false, Ashar: false, Maghrib: false, Isya: false, Tarawih: false, Witir: false, Tahajjud: false, Dhuha: false }, note: "", water: [false, false, false, false, false, false, false, false], rokok: 0, screen: "", ghibah: "", sedekah: false, nominalSedekah: "", mood: "", selfDevNote: "", pagesRead: 0 });
+            return data;
+        }
+
+        async function initDateAndPrayer() {
+            const today = new Date(); document.getElementById('dateHeader').innerText = today.toLocaleDateString('id-ID');
+            try {
+                const response = await fetch('https://api.aladhan.com/v1/timingsByCity?city=Malang&country=Indonesia&method=11');
+                const result = await response.json(); const timings = result.data.timings; maghribTime = timings.Maghrib; 
+                const currentMinutes = today.getHours() * 60 + today.getMinutes();
+                const schedule = [{ name: 'Subuh', time: timings.Fajr }, { name: 'Dzuhur', time: timings.Dhuhr }, { name: 'Ashar', time: timings.Asr }, { name: 'Maghrib', time: timings.Maghrib }, { name: 'Isya', time: timings.Isha }];
+                let nextPrayer = null;
+                for (let i = 0; i < schedule.length; i++) { const [h, m] = schedule[i].time.split(':'); if (currentMinutes < (parseInt(h) * 60 + parseInt(m))) { nextPrayer = schedule[i]; break; } }
+                if (!nextPrayer) nextPrayer = { name: 'Subuh', time: timings.Fajr }; 
+                document.getElementById('nextPrayerName').innerText = nextPrayer.name; document.getElementById('nextPrayerTime').innerText = nextPrayer.time;
+                setInterval(updateCountdownBerbuka, 60000); updateCountdownBerbuka(); 
+            } catch (error) { document.getElementById('nextPrayerName').innerText = "Jadwal"; document.getElementById('nextPrayerTime').innerText = "Offline"; }
+        }
+
+        function updateCountdownBerbuka() {
+            if(!maghribTime) return;
+            const now = new Date(); const [mh, mm] = maghribTime.split(':'); let maghribDate = new Date(); maghribDate.setHours(mh, mm, 0);
+            let diffMs = maghribDate - now; const textElement = document.getElementById('countdownMaghrib');
+            if (diffMs > 0) {
+                let diffHrs = Math.floor(diffMs / 3600000); let diffMins = Math.floor((diffMs % 3600000) / 60000);
+                textElement.innerText = `⏳ Kurang ${diffHrs} jam ${diffMins} menit menuju berbuka!`; textElement.classList.replace('text-emerald-300', 'text-white');
+            } else { textElement.innerText = `🍽️ Alhamdulillah, waktu berbuka telah tiba!`; textElement.classList.replace('text-white', 'text-emerald-300'); }
+        }
+
+        const isDesktop = () => window.innerWidth >= 768;
+        window.addEventListener('resize', handleResponsiveLayout);
+
+        function handleResponsiveLayout() {
+            if (isDesktop() && appData) {
+                document.getElementById('contentPane').classList.remove('hidden'); document.getElementById('view-home').classList.remove('hidden');
+                if (['view-daily', 'view-selfdev', 'view-iqra', 'view-dompet'].every(v => document.getElementById(v).classList.contains('hidden'))) openPage('view-daily');
+            }
+        }
+
+        function openPage(targetView) {
+            ['view-daily', 'view-selfdev', 'view-iqra', 'view-dompet'].forEach(v => document.getElementById(v).classList.add('hidden'));
+            document.getElementById(targetView).classList.remove('hidden');
+            if (isDesktop()) { document.getElementById('contentPane').classList.remove('hidden'); } else { document.getElementById('view-home').classList.add('hidden'); document.getElementById('contentPane').classList.remove('hidden'); }
+            if(targetView === 'view-daily' || targetView === 'view-selfdev') renderCurrentDay();
+            if(targetView === 'view-dompet') renderDompet(); if(targetView === 'view-iqra') renderIqra();
+        }
+
+        function goHome() { if (!isDesktop()) { document.getElementById('contentPane').classList.add('hidden'); document.getElementById('view-home').classList.remove('hidden'); } }
+
+        function setupDaySelector() { const selector = document.getElementById('daySelector'); for(let i=1; i<=30; i++) selector.innerHTML += `<option value="${i-1}">Hari ke-${i}</option>`; }
+        function changeDay() { currentDay = parseInt(document.getElementById('daySelector').value); renderCurrentDay(); if(!document.getElementById('view-iqra').classList.contains('hidden')) renderIqra(); }
+
+        function renderCurrentDay() {
+            const d = appData.days[currentDay];
+            const prayContainer = document.getElementById('prayCheckboxes'); prayContainer.innerHTML = '';
+            const groups = { 'Persiapan Puasa': ['Sahur', 'Puasa'], 'Sholat Fardhu': ['Subuh', 'Dzuhur', 'Ashar', 'Maghrib', 'Isya'], 'Sholat Sunnah & Malam': ['Tarawih', 'Witir', 'Tahajjud', 'Dhuha'] };
+            for (const [groupName, items] of Object.entries(groups)) {
+                prayContainer.innerHTML += `<h3 class="text-[10px] font-bold text-emerald-400 mt-4 mb-2 uppercase tracking-wider">${groupName}</h3>`;
+                items.forEach(sholat => { let isChecked = d.pray[sholat]; prayContainer.innerHTML += `<div class="flex justify-between items-center border-b border-slate-50 pb-2 mb-2 last:border-0"><span class="${isChecked ? 'text-emerald-300 line-through' : 'text-slate-600 font-semibold'} text-sm">${sholat}</span><input type="checkbox" ${isChecked ? 'checked' : ''} onchange="togglePray('${sholat}', this.checked)"></div>`; });
+            }
+
+            document.getElementById('dailyNote').value = d.note || ""; document.getElementById('selfDevDayTitle').innerText = `Puasa Hari Ke-${currentDay + 1}`; document.getElementById('iqraDayTitle').innerText = `Puasa Hari Ke-${currentDay + 1}`;
+            
+            const waterContainer = document.getElementById('waterCheckboxes'); waterContainer.innerHTML = '';
+            d.water.forEach((isDrank, index) => { waterContainer.innerHTML += `<div class="flex flex-col items-center gap-1"><input type="checkbox" class="w-7 h-7 rounded-full border-emerald-200" ${isDrank ? 'checked' : ''} onchange="toggleWater(${index}, this.checked)"><span class="text-[10px] font-bold text-slate-400">Gls ${index+1}</span></div>`; });
+
+            document.getElementById('rokokScore').innerText = d.rokok || 0; document.getElementById('screenSelect').value = d.screen || ""; document.getElementById('ghibahSelect').value = d.ghibah || ""; document.getElementById('sedekahCheck').checked = d.sedekah || false; document.getElementById('sedekahNominal').value = d.nominalSedekah || ""; document.getElementById('moodInput').value = d.mood || ""; document.getElementById('selfDevNote').value = d.selfDevNote || "";
+        }
+
+        async function togglePray(sholat, status) { 
+            appData.days[currentDay].pray[sholat] = status; saveData(); renderCurrentDay(); 
+            try { await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'daily', day: currentDay + 1, item: sholat, value: status }) }); } catch (error) {}
+        }
+        async function saveNote() {
+            const noteText = document.getElementById('dailyNote').value; appData.days[currentDay].note = noteText; saveData();
+            try { const btn = event.target; const oldText = btn.innerText; btn.innerText = "Mengirim..."; await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'daily', day: currentDay + 1, item: 'Note', value: noteText }) }); btn.innerText = "Tersimpan! ✅"; setTimeout(() => { btn.innerText = oldText; }, 2000); } catch (error) {}
+        }
+        function toggleWater(index, status) { appData.days[currentDay].water[index] = status; saveData(); renderCurrentDay(); }
+        function updateDetox(type, val) { if(type === 'rokok') { appData.days[currentDay].rokok = Math.max(0, (appData.days[currentDay].rokok || 0) + val); renderCurrentDay(); saveData(); } }
+
+        async function saveSelfDev() {
+            const d = appData.days[currentDay];
+            d.screen = document.getElementById('screenSelect').value; d.ghibah = document.getElementById('ghibahSelect').value; d.sedekah = document.getElementById('sedekahCheck').checked; d.nominalSedekah = document.getElementById('sedekahNominal').value; d.mood = document.getElementById('moodInput').value; d.selfDevNote = document.getElementById('selfDevNote').value;
+            saveData();
+            try {
+                const btn = event.target; const oldText = btn.innerText; btn.innerText = "Mengirim...";
+                await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'selfdev', user: activeAccount, day: currentDay + 1, water: d.water, rokok: d.rokok, screen: d.screen, ghibah: d.ghibah, sedekah: d.sedekah, nominal: d.nominalSedekah, mood: d.mood, note: d.selfDevNote }) });
+                btn.innerText = "Tersimpan! ✅"; setTimeout(() => { btn.innerText = oldText; }, 2000);
+            } catch(e) {}
+        }
+
+        function formatRp(angka) { return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(angka); }
+        function renderDompet() {
+            let masuk = 0; let keluar = 0; const historyContainer = document.getElementById('trxHistory'); historyContainer.innerHTML = ''; const trxs = [...appData.dompet.transactions].reverse();
+            if (trxs.length === 0) historyContainer.innerHTML = '<p class="text-center text-xs text-slate-400 py-4 italic">Belum ada catatan dompet 🌸</p>';
+            trxs.forEach((trx, revIndex) => {
+                const actualIndex = appData.dompet.transactions.length - 1 - revIndex; if(trx.type === 'masuk') masuk += trx.amount; else keluar += trx.amount; const isMasuk = trx.type === 'masuk';
+                historyContainer.innerHTML += `<div class="flex justify-between items-center bg-slate-50 p-4 rounded-2xl border border-slate-100"><div><p class="text-sm font-semibold ${isMasuk ? 'text-teal-600' : 'text-rose-500'}">${trx.desc}</p><p class="text-[10px] text-slate-400 mt-0.5">${isMasuk ? 'Masuk' : 'Keluar'}</p></div><div class="text-right"><p class="text-sm font-bold ${isMasuk ? 'text-teal-600' : 'text-rose-500'}">${isMasuk ? '+' : '-'}${formatRp(trx.amount)}</p><button onclick="deleteTrx(${actualIndex})" class="text-[10px] text-rose-300 hover:text-rose-500 underline mt-1">Hapus</button></div></div>`;
+            });
+            document.getElementById('totalMasuk').innerText = formatRp(masuk); document.getElementById('totalKeluar').innerText = formatRp(keluar); document.getElementById('sisaSaldo').innerText = formatRp(masuk - keluar);
+        }
+        async function addTransaction() {
+            const type = document.getElementById('trxType').value; const desc = document.getElementById('trxDesc').value.trim(); const amount = parseInt(document.getElementById('trxAmount').value);
+            if(!desc || !amount || isNaN(amount)) { alert('Isi keterangan dan nominalnya dulu ya!'); return; }
+            appData.dompet.transactions.push({ type, desc, amount }); saveData(); document.getElementById('trxDesc').value = ''; document.getElementById('trxAmount').value = ''; renderDompet();
+            try { await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'dompet', type: type === 'masuk' ? 'Masuk' : 'Keluar', desc: desc, amount: amount }) }); } catch (error) {}
+        }
+        function deleteTrx(index) { appData.dompet.transactions.splice(index, 1); saveData(); renderDompet(); }
+
+        async function loadSurahListOnly() {
+            try {
+                const response = await fetch('https://equran.id/api/v2/surat'); const result = await response.json();
+                const selectorAkhir = document.getElementById('surahDropdown'); const selectorAwal = document.getElementById('surahAwalDropdown');
+                selectorAkhir.innerHTML = '<option value="">Pilih Surah...</option>'; selectorAwal.innerHTML = '<option value="">Pilih Surah...</option>';
+                result.data.forEach(surah => { const opt = `<option value="${surah.namaLatin}">${surah.nomor}. ${surah.namaLatin} (Max: ${surah.jumlahAyat} Ayat)</option>`; selectorAkhir.innerHTML += opt; selectorAwal.innerHTML += opt; });
+            } catch (error) {}
+        }
+        function renderIqra() {
+            document.getElementById('targetKhatam').value = appData.iqra.target; document.getElementById('lastSurah').innerText = appData.iqra.lastSurah; document.getElementById('lastAyat').innerText = `Ayat ${appData.iqra.lastAyat}`;
+            let percent = (appData.iqra.totalPagesRead / 604) * 100; document.getElementById('iqraProgress').innerText = `${percent.toFixed(1)}%`;
+            let dailyTarget = 0; if (appData.iqra.target == 30) dailyTarget = 20; else if (appData.iqra.target == 90) dailyTarget = 6; else if (appData.iqra.target == 180) dailyTarget = 3;
+            let pagesToday = appData.days[currentDay].pagesRead || 0; document.getElementById('dailyPagesRead').innerText = pagesToday; document.getElementById('dailyPagesTarget').innerText = dailyTarget > 0 ? `/ ${dailyTarget} Hal` : '/ - Hal';
+            let dailyPercent = dailyTarget > 0 ? Math.min((pagesToday / dailyTarget) * 100, 100) : 0; document.getElementById('dailyProgressBar').style.width = `${dailyPercent}%`;
+        }
+        function updateTarget() { appData.iqra.target = parseInt(document.getElementById('targetKhatam').value); saveData(); renderIqra(); }
+        async function saveIqraProgress() {
+            const sesi = document.getElementById('inputSesi').value; const surahAwal = document.getElementById('surahAwalDropdown').value; const ayatAwal = document.getElementById('inputAyatAwal').value; const surahAkhir = document.getElementById('surahDropdown').value; const ayatAkhir = document.getElementById('inputAyatAkhir').value; const hal = parseInt(document.getElementById('inputHal').value); const juz = document.getElementById('inputJuz').value; const note = document.getElementById('inputNoteIqra').value;
+            if(!sesi || !surahAkhir || !ayatAkhir || !hal || isNaN(hal)) { alert('Sesi, Posisi Akhir, dan Jml Halaman wajib diisi ya! ✨'); return; }
+            appData.iqra.lastSurah = surahAkhir; appData.iqra.lastAyat = ayatAkhir; appData.iqra.totalPagesRead += hal; if(appData.iqra.totalPagesRead > 604) appData.iqra.totalPagesRead = 604; appData.days[currentDay].pagesRead += hal; saveData(); renderIqra();
+            try { const btn = event.target; const oldText = btn.innerText; btn.innerText = "Mengirim ke Sheets... 🚀"; await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'iqra', day: currentDay + 1, sesi: sesi, surahAwal: surahAwal, ayatAwal: ayatAwal, surahAkhir: surahAkhir, ayatAkhir: ayatAkhir, hal: hal, juz: juz, note: note }) }); btn.innerText = "Tersimpan! ✅"; setTimeout(() => { btn.innerText = oldText; }, 2000); } catch (error) {}
+            document.getElementById('surahAwalDropdown').value = ''; document.getElementById('inputAyatAwal').value = ''; document.getElementById('surahDropdown').value = ''; document.getElementById('inputAyatAkhir').value = ''; document.getElementById('inputHal').value = ''; document.getElementById('inputJuz').value = ''; document.getElementById('inputNoteIqra').value = '';
+        }
+
+        function saveData() { localStorage.setItem(storageKey, JSON.stringify(appData)); }
+    </script>
+</body>
+</html>
